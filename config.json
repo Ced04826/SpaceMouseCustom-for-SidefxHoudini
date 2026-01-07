@@ -1,0 +1,101 @@
+{
+    "# Space Mouse Configuration": "",
+    "mode": "viewport",
+    "# mode options: network (Network Editor), viewport (3D Viewport tumble), viewport_fps (3D Viewport first-person)": "",
+    "active_preset": "rotate",
+    "presets": {
+        "translate": {
+            "axis_mapping": {
+                "pan_horizontal": "x",
+                "pan_vertical": "-y",
+                "zoom": "z"
+            }
+        },
+        "rotate": {
+            "axis_mapping": {
+                "pan_horizontal": "-ry",
+                "pan_vertical": "-rx",
+                "zoom": "z"
+            }
+        }
+    },
+    "network_speed": {
+        "pan": 0.15,
+        "zoom": 0.07
+    },
+    "network_axis_multiplier": {
+        "pan_horizontal": 1.0,
+        "pan_vertical": 1.0,
+        "zoom": 1.0
+    },
+    "viewport_axis_mapping": {
+        "translate_x": "x",
+        "translate_y": "-z",
+        "translate_z": "y",
+        "rotate_x": "rx",
+        "rotate_y": "-rz",
+        "rotate_z": "-ry"
+    },
+    "viewport_speed": {
+        "translate": 2.5,
+        "rotate": 6.0
+    },
+    "viewport_axis_multiplier": {
+        "translate_x": 1.0,
+        "translate_y": 1.0,
+        "translate_z": 1.0,
+        "rotate_x": 1.0,
+        "rotate_y": 1.5,
+        "rotate_z": 0.5
+    },
+    "fps_axis_mapping": {
+        "translate_x": "x",
+        "translate_y": "-z",
+        "translate_z": "y",
+        "rotate_x": "rx",
+        "rotate_y": "-rz",
+        "rotate_z": "-ry"
+    },
+    "fps_speed": {
+        "translate": 2.5,
+        "rotate": 6.0
+    },
+    "fps_axis_multiplier": {
+        "translate_x": 1.0,
+        "translate_y": 1.0,
+        "translate_z": 1.0,
+        "rotate_x": 1.0,
+        "rotate_y": 3.0,
+        "rotate_z": 0.5
+    },
+    "button_hotkeys": {
+        "network": {
+            "button_1": "`",
+            "button_2": "Shift"
+        },
+        "viewport": {
+            "button_1": "`",
+            "button_2": "Alt+F"
+        },
+        "viewport_fps": {
+            "button_1": "Ctrl",
+            "button_2": "Shift"
+        }
+    },
+    "auto_mode_switch": {
+        "enabled": true,
+        "network_under_cursor": true
+    },
+    "hover_refresh": {
+        "enabled": true,
+        "hz": 30.0,
+        "method": "win32",
+        "jitter_px": 1
+    },
+    "deadzone": {
+        "value": 15
+    },
+    "network": {
+        "port": 19879
+    }
+}
