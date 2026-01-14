@@ -68,6 +68,21 @@ restore_3dconnexion.bat
 | `network` | Network Editor pan/zoom | `SM Network` |
 | `viewport` | Scene Viewer tumble-style navigation | `SM Viewport` |
 | `viewport_fps` | Scene Viewer first-person/drone navigation | `SM FPS` |
+| `cargo_attached` | Spring Arm Effect - Box follows Camera | `SM Cargo Attached` |
+
+### Cargo Attached Mode (Spring Arm)
+
+This mode attaches a Box (`/obj/cargo`) to a Camera (`/obj/sm_camera`) at a fixed distance:
+- Box follows Camera, maintaining constant distance
+- Box rotates (yaw only) to always face Camera
+- User controls Camera with mouse, SpaceMouse will control Box rotation (future)
+
+**Setup:**
+1. Create Camera node: `/obj` → Tab → Camera → name it `sm_camera`
+2. Viewport → Right-click → Look Through → `sm_camera`
+3. Click `SM Cargo Attached` or `Reload SM Cargo`
+
+See `CARGO_ATTACHED_IMPLEMENTATION.md` for detailed documentation.
 
 ## Configuration (`config.json`)
 

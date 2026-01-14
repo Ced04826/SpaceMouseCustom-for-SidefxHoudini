@@ -20,6 +20,13 @@ Control Houdini's:
 - **`network`**: pans/zooms the Network Editor (uses `hou.NetworkEditor.setVisibleBounds()`).
 - **`viewport`**: camera-local translate + rotate (tumble-style behavior).
 - **`viewport_fps`**: camera-local translate + rotate around camera center (drone/first-person).
+- **`cargo_attached`**: Spring Arm Effect - Box follows Camera at fixed distance (see `CARGO_ATTACHED_IMPLEMENTATION.md`).
+
+### Cargo Attached Mode (Spring Arm) - NEW 2026-01-11
+- Box (`/obj/cargo`) follows Camera (`/obj/sm_camera`) at fixed distance
+- Yaw-only rotation facing camera (tidal locking effect)
+- Uses real Camera node for accurate transforms
+- User controls Camera with mouse, SpaceMouse will control Box rotation (future)
 
 ### Configurable Axis Mapping + Speed
 From `config.json`:

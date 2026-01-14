@@ -1,6 +1,6 @@
 {
     "# Space Mouse Configuration": "",
-    "mode": "viewport",
+    "mode": "cargo_attached",
     "# mode options: network (Network Editor), viewport (3D Viewport tumble), viewport_fps (3D Viewport first-person)": "",
     "active_preset": "rotate",
     "presets": {
@@ -80,6 +80,14 @@
         "viewport_fps": {
             "button_1": "Ctrl",
             "button_2": "Shift"
+        },
+        "cargo": {
+            "button_1": "none",
+            "button_2": "none"
+        },
+        "cargo_attached": {
+            "button_1": "reset_rotation",
+            "button_2": "none"
         }
     },
     "auto_mode_switch": {
