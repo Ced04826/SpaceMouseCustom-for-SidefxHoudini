@@ -1,6 +1,6 @@
 {
     "# Space Mouse Configuration": "",
-    "mode": "cargo_attached",
+    "mode": "viewport_fps",
     "# mode options: network (Network Editor), viewport (3D Viewport tumble), viewport_fps (3D Viewport first-person)": "",
     "active_preset": "rotate",
     "presets": {
@@ -65,7 +65,7 @@
         "translate_y": 1.0,
         "translate_z": 1.0,
         "rotate_x": 1.0,
-        "rotate_y": 3.0,
+        "rotate_y": 2.0,
         "rotate_z": 0.5
     },
     "button_hotkeys": {

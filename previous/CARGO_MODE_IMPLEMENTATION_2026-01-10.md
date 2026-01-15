@@ -97,7 +97,7 @@ Any engine must provide:
 
 ### File Location
 
-`E:\AI\Houdini_MCP\spacemouse_network_pan\spacemouse_standalone.py`
+`D:\2026\Q1\Houdini\Plugins\spacemouse_network_pan\spacemouse_standalone.py`
 
 ### Key Function: `_apply_cargo_rotation()` (Lines 2377-2514)
 

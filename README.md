@@ -22,7 +22,7 @@ Why: Houdini + the 3Dconnexion driver make raw HID access unreliable inside Houd
 
 - Windows
 - Houdini 21+ (PySide6)
-- Python venv at `E:\AI\Houdini_MCP\.venv` (used by `start_spacemouse_pan.bat`)
+- Python venv at `D:\2026\Q1\Houdini\Plugins\.venv` (used by `start_spacemouse_pan.bat`)
 - `hidapi` installed in that venv (`pip install hidapi`)
 - `uv` on PATH (optional): `start_spacemouse_pan.bat` uses `uv pip install hidapi` if `hidapi` is missing
 - Admin rights (to stop 3Dconnexion processes for raw HID access)
@@ -46,7 +46,7 @@ Each mode tool starts the Houdini receiver, sets the mode, and launches the exte
 In Houdini Python Shell:
 ```python
 import sys
-sys.path.insert(0, r"E:\AI\Houdini_MCP")
+sys.path.insert(0, r"D:\2026\Q1\Houdini\Plugins")
 from spacemouse_network_pan.spacemouse_standalone import start_receiver
 start_receiver()
 ```

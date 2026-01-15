@@ -17,3 +17,10 @@ __pycache__/
 # OS
 .DS_Store
 Thumbs.db
+
+# Virtual environment
+.venv/
+
+# Agent config files (not for repo)
+AGENTS.md
+CLAUDE.md

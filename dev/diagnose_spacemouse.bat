@@ -15,7 +15,7 @@ echo Running diagnostic...
 echo Move and TWIST/TILT the Space Mouse during the test!
 echo.
 
-cd /d "E:\AI\Houdini_MCP"
+cd /d "D:\2026\Q1\Houdini\Plugins"
 .venv\Scripts\python.exe spacemouse_network_pan\dev\diagnose_spacemouse.py
 
 echo.

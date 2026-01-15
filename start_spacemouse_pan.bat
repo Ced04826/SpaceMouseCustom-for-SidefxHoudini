@@ -16,8 +16,8 @@ if %errorLevel% neq 0 (
     exit /b 1
 )
 
-:: Set the project directory (parent of spacemouse_network_pan)
-set PROJECT_DIR=%~dp0..
+:: Set the project directory (this script's directory: spacemouse_network_pan)
+set PROJECT_DIR=%~dp0
 pushd "%PROJECT_DIR%"
 
 echo [1/4] Checking Python environment...
@@ -85,7 +85,7 @@ echo Starting Space Mouse reader (Ctrl+C to stop)...
 echo.
 
 :: Run the standalone script (forward args from launcher, e.g. --houdini-pid)
-"%PYTHON_CMD%" "%PROJECT_DIR%\spacemouse_network_pan\spacemouse_standalone.py" %*
+"%PYTHON_CMD%" "%PROJECT_DIR%\spacemouse_standalone.py" %*
 
 popd
 

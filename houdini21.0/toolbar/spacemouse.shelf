@@ -1,0 +1,585 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<shelfDocument>
+  <!-- This file contains definitions of shelves, toolbars, and tools.
+ It should not be hand-edited when it is being used by the application.
+ Note, that two definitions of the same element are not allowed in
+ a single file. -->
+
+  <toolshelf name="spacemouse_shelf" label="Space Mouse">
+    <memberTool name="spacemouse_mode_network"/>
+    <memberTool name="spacemouse_mode_viewport"/>
+    <memberTool name="spacemouse_mode_fps"/>
+    <memberTool name="spacemouse_mode_cargo"/>
+    <memberTool name="spacemouse_cargo_reset"/>
+    <memberTool name="spacemouse_config"/>
+    <memberTool name="spacemouse_control"/>
+  </toolshelf>
+
+  <tool name="spacemouse_mode_network" label="SM Network" icon="MISC_python">
+    <script scriptType="python"><![CDATA[
+import sys
+import hou
+import importlib
+
+project_path = r"D:\2026\Q1\Houdini\Plugins"
+if project_path not in sys.path:
+    sys.path.insert(0, project_path)
+
+import spacemouse_network_pan.spacemouse_standalone as sm
+importlib.reload(sm)
+
+sm.start_receiver()
+sm.set_mode("network")
+sm.launch_reader(elevated=True, no_wait=True)
+]]></script>
+  </tool>
+
+  <tool name="spacemouse_mode_viewport" label="SM Viewport" icon="MISC_python">
+    <script scriptType="python"><![CDATA[
+import sys
+import hou
+import importlib
+
+project_path = r"D:\2026\Q1\Houdini\Plugins"
+if project_path not in sys.path:
+    sys.path.insert(0, project_path)
+
+import spacemouse_network_pan.spacemouse_standalone as sm
+importlib.reload(sm)
+
+sm.start_receiver()
+sm.set_mode("viewport")
+sm.launch_reader(elevated=True, no_wait=True)
+]]></script>
+  </tool>
+
+  <tool name="spacemouse_mode_fps" label="SM FPS" icon="MISC_python">
+    <script scriptType="python"><![CDATA[
+import sys
+import hou
+import importlib
+
+project_path = r"D:\2026\Q1\Houdini\Plugins"
+if project_path not in sys.path:
+    sys.path.insert(0, project_path)
+
+import spacemouse_network_pan.spacemouse_standalone as sm
+importlib.reload(sm)
+
+sm.start_receiver()
+sm.set_mode("viewport_fps")
+sm.launch_reader(elevated=True, no_wait=True)
+]]></script>
+  </tool>
+
+  <tool name="spacemouse_control" label="Space Mouse" icon="MISC_python">
+    <script scriptType="python"><![CDATA[
+import sys
+import hou
+
+# Add project path if not already there
+project_path = r"D:\2026\Q1\Houdini\Plugins"
+if project_path not in sys.path:
+    sys.path.append(project_path)
+
+# Check if receiver is already running
+receiver = getattr(hou.session, '_spacemouse_receiver', None)
+
+if receiver and receiver._callback_registered:
+    # Receiver is running - offer to stop or reload config
+    mode = getattr(receiver, 'mode', 'network')
+    choice = hou.ui.displayMessage(
+        f"Space Mouse receiver is running.\nMode: {mode}",
+        buttons=["Reload Config", "Debug Info", "Cancel"],
+        default_choice=0,
+        close_choice=2,
+        title="Space Mouse Control"
+    )
+
+    if choice == 0:  # Reload Config
+        import importlib
+        import spacemouse_network_pan.spacemouse_standalone as sm
+        importlib.reload(sm)
+        sm.reload_config()
+        hou.ui.displayMessage("Config reloaded!", title="Space Mouse")
+
+    elif choice == 1:  # Debug
+        import importlib
+        import spacemouse_network_pan.spacemouse_standalone as sm
+        importlib.reload(sm)
+        r = sm.debug_receiver()
+        if r:
+            mode = getattr(r, 'mode', 'network')
+            lines = [
+                f"mode: {mode}",
+                f"pan_speed: {getattr(r, 'pan_speed', 'N/A')}",
+                f"zoom_speed: {getattr(r, 'zoom_speed', 'N/A')}",
+                f"axis_mapping: {getattr(r, 'axis_mapping', 'N/A')}",
+                f"message_count: {getattr(r, 'message_count', 'N/A')}",
+            ]
+
+            if hasattr(r, "_last_error"):
+                lines.append(f"last_error: {getattr(r, '_last_error', 'N/A')}")
+
+            if hasattr(r, "_perf_latency_last_ms"):
+                window = list(getattr(r, "_perf_latency_window_ms", []))        
+                window.sort()
+
+                def pct(p):
+                    if not window:
+                        return None
+                    return window[int(p * (len(window) - 1))]
+
+                p90 = pct(0.90)
+                p99 = pct(0.99)
+                mean = getattr(r, "_perf_latency_mean_ms", None) if getattr(r, "_perf_latency_count", 0) else None
+
+                steps_avg = None
+                if getattr(r, "_perf_steps_count", 0):
+                    steps_avg = r._perf_steps_sum / r._perf_steps_count
+
+                interval_avg = None
+                interval_window = list(getattr(r, "_perf_apply_interval_window_ms", []))
+                if interval_window:
+                    interval_avg = sum(interval_window) / len(interval_window)
+
+                hz = (1000.0 / interval_avg) if interval_avg else None
+
+                def fmt(v):
+                    return "N/A" if v is None else f"{v:.2f}"
+
+                lines += [
+                    "",
+                    "Perf:",
+                    f"latency_ms: last={fmt(getattr(r, '_perf_latency_last_ms', None))} mean={fmt(mean)} p90={fmt(p90)} p99={fmt(p99)}",
+                    f"backlog_steps: last={getattr(r, '_perf_steps_last', 'N/A')} avg={fmt(steps_avg)} max={getattr(r, '_perf_steps_max', 'N/A')} skipped_seq={getattr(r, '_perf_seq_skipped', 'N/A')}",
+                    f"apply_hz: {fmt(hz)} (interval_avg_ms={fmt(interval_avg)})",
+                ]
+
+            hou.ui.displayMessage("\n".join(lines), title="Space Mouse Debug")
+
+else:
+    # Receiver not running - start it
+    choice = hou.ui.displayMessage(
+        "Space Mouse receiver is not running.\n\nUse SM Network / SM Viewport / SM FPS to start in a specific mode.",
+        buttons=["Start Receiver", "Cancel"],
+        default_choice=0,
+        close_choice=1,
+        title="Space Mouse Control"
+    )
+
+    if choice == 0:
+        import importlib
+        import spacemouse_network_pan.spacemouse_standalone as sm
+        importlib.reload(sm)
+        sm.start_receiver()
+        mode = sm.get_mode()
+        hou.ui.displayMessage(f"Receiver started in {mode} mode!", title="Space Mouse")
+]]></script>
+  </tool>
+
+  <tool name="spacemouse_config" label="SM Config" icon="BUTTONS_gear">
+    <script scriptType="python"><![CDATA[
+import sys
+import hou
+import json
+
+project_path = r"D:\2026\Q1\Houdini\Plugins"
+if project_path not in sys.path:
+    sys.path.append(project_path)
+
+import importlib
+import spacemouse_network_pan.spacemouse_standalone as sm
+importlib.reload(sm)
+
+config = sm.load_config()
+active_preset = config.get('active_preset', 'translate')
+current_mode = config.get('mode', 'network')
+presets = list(config.get('presets', {}).keys())
+
+# Main menu
+choice = hou.ui.displayMessage(
+    f"Space Mouse Configuration\n\nMode: {current_mode}\nPreset: {active_preset}",
+    buttons=["Global Options", "Edit Network Config", "Edit Viewport Config", "Edit FPS Config", "Cancel"],
+    default_choice=0,
+    close_choice=4,
+    title="Space Mouse Config"
+)
+
+if choice == 0:  # Global Options
+    def _parse_bool(value, default=False):
+        try:
+            s = str(value).strip().lower()
+        except Exception:
+            return default
+        if s in ("1", "true", "yes", "y", "on"):
+            return True
+        if s in ("0", "false", "no", "n", "off"):
+            return False
+        return default
+
+    auto = config.get("auto_mode_switch", {}) or {}
+    hover = config.get("hover_refresh", {}) or {}
+
+    button_idx, values = hou.ui.readMultiInput(
+        "Edit global options:",
+        input_labels=[
+            "auto_mode_switch enabled",
+            "auto_mode_switch network_under_cursor",
+            "hover_refresh enabled",
+            "hover_refresh method (win32|qt|cursor)",
+            "hover_refresh hz",
+            "hover_refresh jitter_px",
+        ],
+        initial_contents=[
+            str(auto.get("enabled", False)),
+            str(auto.get("network_under_cursor", True)),
+            str(hover.get("enabled", False)),
+            str(hover.get("method", "win32")),
+            str(hover.get("hz", 30)),
+            str(hover.get("jitter_px", 1)),
+        ],
+        buttons=["Save", "Cancel"],
+        default_choice=0,
+        close_choice=1,
+        title="Global Options"
+    )
+
+    if button_idx == 0:  # Save
+        try:
+            config.setdefault("auto_mode_switch", {})
+            config["auto_mode_switch"]["enabled"] = _parse_bool(values[0], auto.get("enabled", False))
+            config["auto_mode_switch"]["network_under_cursor"] = _parse_bool(values[1], auto.get("network_under_cursor", True))
+        except Exception:
+            pass
+
+        try:
+            config.setdefault("hover_refresh", {})
+            config["hover_refresh"]["enabled"] = _parse_bool(values[2], hover.get("enabled", False))
+
+            method = str(values[3]).strip().lower()
+            if method not in ("win32", "qt", "cursor"):
+                method = str(hover.get("method", "win32")).strip().lower()
+            config["hover_refresh"]["method"] = method
+        except Exception:
+            pass
+
+        try:
+            config["hover_refresh"]["hz"] = float(str(values[4]).strip())
+        except Exception:
+            pass
+        try:
+            config["hover_refresh"]["jitter_px"] = int(str(values[5]).strip())
+        except Exception:
+            pass
+
+        sm.save_config(config)
+        sm.reload_config()
+        hou.ui.displayMessage("Global config saved!", title="Space Mouse")
+
+elif choice == 1:  # Edit Network Config
+    mapping = config.get('axis_mapping', {})
+    network_speed = config.get('network_speed', {})
+    network_mul = config.get('network_axis_multiplier', {})
+    hotkeys = (config.get('button_hotkeys', {}) or {}).get('network', {})       
+    deadzone = config.get('deadzone', {})
+
+    button_idx, values = hou.ui.readMultiInput(
+        "Edit Network Editor config:\n(Axes: x, -x, y, -y, z, -z, rx, -rx, ry, -ry, rz, -rz, none)",
+        input_labels=[
+            "pan_horizontal", "pan_vertical", "zoom",
+            "pan_speed", "zoom_speed",
+            "pan_horizontal_mul", "pan_vertical_mul", "zoom_mul",
+            "button_1 hotkey", "button_2 hotkey",
+            "deadzone"
+        ],
+        initial_contents=[
+            mapping.get('pan_horizontal', 'x'),
+            mapping.get('pan_vertical', '-y'),
+            mapping.get('zoom', 'z'),
+            str(network_speed.get('pan', 0.03)),
+            str(network_speed.get('zoom', 0.07)),
+            str(network_mul.get('pan_horizontal', 1.0)),
+            str(network_mul.get('pan_vertical', 1.0)),
+            str(network_mul.get('zoom', 1.0)),
+            str(hotkeys.get('button_1', 'none')),
+            str(hotkeys.get('button_2', 'none')),
+            str(deadzone.get('value', 15))
+        ],
+        buttons=["Save", "Switch Preset", "Cancel"],
+        default_choice=0,
+        close_choice=2,
+        title="Edit Network Config"
+    )
+
+    if button_idx == 1:  # Switch Preset (network mode only)
+        if current_mode != "network":
+            hou.ui.displayMessage("Switch Preset is only available in network mode.", title="Space Mouse")
+        else:
+            labels = [f"{p} {'[active]' if p == active_preset else ''}" for p in presets]
+            preset_choice = hou.ui.displayMessage(
+                "Select preset:",
+                buttons=labels + ["Cancel"],
+                default_choice=presets.index(active_preset) if active_preset in presets else 0,
+                title="Switch Preset"
+            )
+
+            if preset_choice < len(presets):
+                sm.switch_preset(presets[preset_choice])
+                hou.ui.displayMessage(f"Switched to: {presets[preset_choice]}", title="Space Mouse")
+
+    elif button_idx == 0:
+        config['axis_mapping'] = {
+            'pan_horizontal': values[0].strip(),
+            'pan_vertical': values[1].strip(),
+            'zoom': values[2].strip()
+        }
+        if active_preset in config.get('presets', {}):
+            config['presets'][active_preset]['axis_mapping'] = config['axis_mapping'].copy()
+        try:
+            config['network_speed']['pan'] = float(values[3].strip())
+        except:
+            pass
+        try:
+            config['network_speed']['zoom'] = float(values[4].strip())
+        except:
+            pass
+        try:
+            config.setdefault('network_axis_multiplier', {})
+            config['network_axis_multiplier']['pan_horizontal'] = float(values[5].strip())
+        except:
+            pass
+        try:
+            config['network_axis_multiplier']['pan_vertical'] = float(values[6].strip())
+        except:
+            pass
+        try:
+            config['network_axis_multiplier']['zoom'] = float(values[7].strip())
+        except:
+            pass
+
+        try:
+            config.setdefault('button_hotkeys', {})
+            config['button_hotkeys'].setdefault('network', {})
+            config['button_hotkeys']['network']['button_1'] = values[8].strip() or 'none'
+            config['button_hotkeys']['network']['button_2'] = values[9].strip() or 'none'
+        except:
+            pass
+
+        try:
+            config['deadzone']['value'] = int(values[10].strip())
+        except:
+            pass
+        sm.save_config(config)
+        sm.reload_config()
+        hou.ui.displayMessage("Network config saved!", title="Space Mouse")
+
+elif choice == 2:  # Edit Viewport Config
+    vp_mapping = config.get('viewport_axis_mapping', {})
+    vp_speed = config.get('viewport_speed', {})
+    vp_mul = config.get('viewport_axis_multiplier', {})
+    hotkeys = (config.get('button_hotkeys', {}) or {}).get('viewport', {})
+
+    button_idx, values = hou.ui.readMultiInput(
+        "Edit Viewport config:\n(Axes: x, -x, y, -y, z, -z, rx, -rx, ry, -ry, rz, -rz, none)",
+        input_labels=[
+            "translate_x", "translate_y", "translate_z",
+            "rotate_x (pitch)", "rotate_y (yaw)", "rotate_z (roll)",      
+            "translate_speed", "rotate_speed",
+            "translate_x_mul", "translate_y_mul", "translate_z_mul",
+            "rotate_x_mul", "rotate_y_mul", "rotate_z_mul",
+            "button_1 hotkey", "button_2 hotkey"
+        ],
+        initial_contents=[
+            vp_mapping.get('translate_x', 'x'),
+            vp_mapping.get('translate_y', 'y'),
+            vp_mapping.get('translate_z', 'z'),
+            vp_mapping.get('rotate_x', 'rx'),
+            vp_mapping.get('rotate_y', 'ry'),
+            vp_mapping.get('rotate_z', 'rz'),
+            str(vp_speed.get('translate', 0.5)),
+            str(vp_speed.get('rotate', 0.3)),
+            str(vp_mul.get('translate_x', 1.0)),
+            str(vp_mul.get('translate_y', 1.0)),
+            str(vp_mul.get('translate_z', 1.0)),
+            str(vp_mul.get('rotate_x', 1.0)),
+            str(vp_mul.get('rotate_y', 1.0)),
+            str(vp_mul.get('rotate_z', 1.0)),
+            str(hotkeys.get('button_1', 'none')),
+            str(hotkeys.get('button_2', 'none'))
+        ],
+        buttons=["Save", "Cancel"],
+        default_choice=0,
+        close_choice=1,
+        title="Edit Viewport Config"
+    )
+
+    if button_idx == 0:
+        config['viewport_axis_mapping'] = {
+            'translate_x': values[0].strip(),
+            'translate_y': values[1].strip(),
+            'translate_z': values[2].strip(),
+            'rotate_x': values[3].strip(),
+            'rotate_y': values[4].strip(),
+            'rotate_z': values[5].strip()
+        }
+        try:
+            config['viewport_speed']['translate'] = float(values[6].strip())
+        except:
+            pass
+        try:
+            config['viewport_speed']['rotate'] = float(values[7].strip())
+        except:
+            pass
+
+        try:
+            config.setdefault('viewport_axis_multiplier', {})
+            config['viewport_axis_multiplier']['translate_x'] = float(values[8].strip())
+            config['viewport_axis_multiplier']['translate_y'] = float(values[9].strip())
+            config['viewport_axis_multiplier']['translate_z'] = float(values[10].strip())
+            config['viewport_axis_multiplier']['rotate_x'] = float(values[11].strip())
+            config['viewport_axis_multiplier']['rotate_y'] = float(values[12].strip())
+            config['viewport_axis_multiplier']['rotate_z'] = float(values[13].strip())
+        except:
+            pass
+
+        try:
+            config.setdefault('button_hotkeys', {})
+            config['button_hotkeys'].setdefault('viewport', {})
+            config['button_hotkeys']['viewport']['button_1'] = values[14].strip() or 'none'
+            config['button_hotkeys']['viewport']['button_2'] = values[15].strip() or 'none'
+        except:
+            pass
+
+        sm.save_config(config)
+        sm.reload_config()
+        hou.ui.displayMessage("Viewport config saved!", title="Space Mouse")
+
+elif choice == 3:  # Edit FPS Config
+    fps_mapping = config.get('fps_axis_mapping', config.get('viewport_axis_mapping', {}))
+    fps_speed = config.get('fps_speed', config.get('viewport_speed', {}))
+    fps_mul = config.get('fps_axis_multiplier', config.get('viewport_axis_multiplier', {}))
+    hotkeys = (config.get('button_hotkeys', {}) or {}).get('viewport_fps', {})
+
+    button_idx, values = hou.ui.readMultiInput(
+        "Edit FPS config:\n(Axes: x, -x, y, -y, z, -z, rx, -rx, ry, -ry, rz, -rz, none)",
+        input_labels=[
+            "translate_x", "translate_y", "translate_z",
+            "rotate_x (pitch)", "rotate_y (yaw)", "rotate_z (roll)",      
+            "translate_speed", "rotate_speed",
+            "translate_x_mul", "translate_y_mul", "translate_z_mul",
+            "rotate_x_mul", "rotate_y_mul", "rotate_z_mul",
+            "button_1 hotkey", "button_2 hotkey"
+        ],
+        initial_contents=[
+            fps_mapping.get('translate_x', 'x'),
+            fps_mapping.get('translate_y', 'y'),
+            fps_mapping.get('translate_z', 'z'),
+            fps_mapping.get('rotate_x', 'rx'),
+            fps_mapping.get('rotate_y', 'ry'),
+            fps_mapping.get('rotate_z', 'rz'),
+            str(fps_speed.get('translate', 0.5)),
+            str(fps_speed.get('rotate', 0.3)),
+            str(fps_mul.get('translate_x', 1.0)),
+            str(fps_mul.get('translate_y', 1.0)),
+            str(fps_mul.get('translate_z', 1.0)),
+            str(fps_mul.get('rotate_x', 1.0)),
+            str(fps_mul.get('rotate_y', 1.0)),
+            str(fps_mul.get('rotate_z', 1.0)),
+            str(hotkeys.get('button_1', 'none')),
+            str(hotkeys.get('button_2', 'none'))
+        ],
+        buttons=["Save", "Cancel"],
+        default_choice=0,
+        close_choice=1,
+        title="Edit FPS Config"
+    )
+
+    if button_idx == 0:
+        config['fps_axis_mapping'] = {
+            'translate_x': values[0].strip(),
+            'translate_y': values[1].strip(),
+            'translate_z': values[2].strip(),
+            'rotate_x': values[3].strip(),
+            'rotate_y': values[4].strip(),
+            'rotate_z': values[5].strip()
+        }
+        config.setdefault('fps_speed', {})
+        try:
+            config['fps_speed']['translate'] = float(values[6].strip())
+        except:
+            pass
+        try:
+            config['fps_speed']['rotate'] = float(values[7].strip())
+        except:
+            pass
+
+        try:
+            config.setdefault('fps_axis_multiplier', {})
+            config['fps_axis_multiplier']['translate_x'] = float(values[8].strip())
+            config['fps_axis_multiplier']['translate_y'] = float(values[9].strip())
+            config['fps_axis_multiplier']['translate_z'] = float(values[10].strip())
+            config['fps_axis_multiplier']['rotate_x'] = float(values[11].strip())
+            config['fps_axis_multiplier']['rotate_y'] = float(values[12].strip())
+            config['fps_axis_multiplier']['rotate_z'] = float(values[13].strip())
+        except:
+            pass
+
+        try:
+            config.setdefault('button_hotkeys', {})
+            config['button_hotkeys'].setdefault('viewport_fps', {})
+            config['button_hotkeys']['viewport_fps']['button_1'] = values[14].strip() or 'none'
+            config['button_hotkeys']['viewport_fps']['button_2'] = values[15].strip() or 'none'
+        except:
+            pass
+
+        sm.save_config(config)
+        sm.reload_config()
+        hou.ui.displayMessage("FPS config saved!", title="Space Mouse")
+]]></script>
+  </tool>
+
+  <tool name="spacemouse_mode_cargo" label="SM Cargo" icon="MISC_python">
+    <script scriptType="python"><![CDATA[import sys
+import hou
+import importlib
+
+project_path = r"D:\2026\Q1\Houdini\Plugins"
+if project_path not in sys.path:
+    sys.path.insert(0, project_path)
+
+import spacemouse_network_pan.spacemouse_standalone as sm
+importlib.reload(sm)
+
+# Setup cargo scene first
+sm.setup_cargo_scene()
+
+# Start receiver in cargo mode
+sm.start_receiver()
+sm.set_mode("cargo_attached")
+sm.launch_reader(elevated=True, no_wait=True)
+
+hou.ui.displayMessage("Cargo mode started!\nUse SpaceMouse to rotate the cargo box.", title="Space Mouse Cargo")
+]]></script>
+  </tool>
+
+  <tool name="spacemouse_cargo_reset" label="SM Cargo Reset" icon="BUTTONS_reload">
+    <script scriptType="python"><![CDATA[import sys
+import hou
+import importlib
+
+project_path = r"D:\2026\Q1\Houdini\Plugins"
+if project_path not in sys.path:
+    sys.path.insert(0, project_path)
+
+import spacemouse_network_pan.spacemouse_standalone as sm
+importlib.reload(sm)
+
+result = sm.reset_cargo()
+if result:
+    hou.ui.displayMessage("Cargo reset to camera front!", title="Space Mouse Cargo")
+else:
+    hou.ui.displayMessage("Failed to reset cargo. Make sure cargo mode is active.", title="Space Mouse Cargo")
+]]></script>
+  </tool>
+</shelfDocument>

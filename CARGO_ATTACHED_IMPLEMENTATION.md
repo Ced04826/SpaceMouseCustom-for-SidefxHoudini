@@ -15,7 +15,7 @@
 
 | 文件 | 说明 |
 |------|------|
-| `E:\AI\Houdini_MCP\spacemouse_network_pan\spacemouse_standalone.py` | 主代码文件 |
+| `D:\2026\Q1\Houdini\Plugins\spacemouse_network_pan\spacemouse_standalone.py` | 主代码文件 |
 | `C:\Users\sherr\Documents\houdini21.0\toolbar\spacemouse.shelf` | Houdini Shelf 工具 |
 
 ### 关键函数

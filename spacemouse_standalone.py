@@ -17,7 +17,7 @@ REQUIREMENTS:
 USAGE:
     1. In Houdini Python Shell:
        >>> import sys
-       >>> sys.path.append(r"E:\\AI\\Houdini_MCP")
+       >>> sys.path.append(r"D:\\2026\\Q1\\Houdini\\Plugins")
        >>> from spacemouse_network_pan.spacemouse_standalone import start_receiver
        >>> start_receiver()
 
